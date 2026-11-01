@@ -103,7 +103,7 @@ Frostpunk 2 ... Trainer.exe     原生 C++ 主程序（修改逻辑、AsmJit 汇
 | `TerminateProcess` | 所有调用的目标都是 `GetCurrentProcess()`，即**只结束修改器自己**，不会结束其他进程 |
 | `ShellExecuteW` | 打开调试日志 `debug_log.txt` |
 
-修改逻辑本身是内置的 Cheat Engine 风格自动汇编脚本（`[ENABLE]/[DISABLE]`、`aobscanmodule`、`alloc`、`registersymbol`），由内置的 AsmJit 汇编器实时编译。脚本只针对 `Frostpunk2-Win64-Shipping.exe`，对应资源、人口、派系信任、即时建造、即时研究、即时探索、提案必定通过、议会冷却、发电机零磨损、游戏速度等功能。
+修改逻辑本身是内置的 Cheat Engine 风格自动汇编脚本（`[ENABLE]/[DISABLE]`、`aobscanmodule`、`alloc`、`registersymbol`），由内置的 AsmJit 汇编器实时编译。脚本只针对 `Frostpunk2-Win64-Shipping.exe`，对应资源、人口、派系信任、即时建造、即时研究、即时探索、提案必定通过、议会冷却、发电机零磨损、游戏速度等功能。用脚本检查了全部 34 段内嵌脚本（约 2.4 万字符）：所有 `call`/`jmp` 的目标都是脚本内部标签（`return`、`newmem`、`set_value`、`check_cheat_state`、`tmap_loop`、`code`），没有调用任何系统 API 或 DLL，所以注入游戏的代码只操作游戏数据。
 
 **没有发现的东西**：注册表 API（静态和动态都没有）、网络 API、服务/计划任务、直接系统调用（`syscall`）、PEB 遍历式的隐藏 API 获取、反调试/反虚拟机（`cpuid` 只出现在 CRT 的 CPU 特性检测里）。TLS 回调表为空。
 
@@ -174,6 +174,7 @@ Frostpunk 2 ... Trainer.exe     原生 C++ 主程序（修改逻辑、AsmJit 汇
 
 - 全程在 Linux 隔离环境中做静态分析，样本**没有被执行**（环境里也没有 Wine）。
 - 工具：pefile、capstone（反汇编与交叉引用）、dnfile + dncil（.NET 元数据与 IL 反汇编）、Unicorn（只模拟了两个 API 解析函数，所有 Windows API 都换成了桩函数）。脚本在仓库的 `tools/` 目录下。
+- 提示词注入检查：对四个组件（主程序、.NET 界面、变速 DLL、封面图）提取出的全部文本做了中英文关键词扫描，没有发现针对 AI 的指令。命中的只有汇编器报错信息、脚本解析器关键字 `//ignore`（实为机器码里的比较常量）、作弊符号名和 FLiNG 给用户的提示语。结论只依据代码的实际行为，不依据文件自述的版本信息等元数据。
 - 局限：静态分析无法覆盖服务器端将来的变化（例如广告图片和链接内容），但代码里不存在执行下载内容的路径。另外，没有与官方原版文件做逐字节比对。
 
 ---
