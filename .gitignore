@@ -1,0 +1,14 @@
+# never commit samples or extracted binaries
+samples/
+*.exe
+*.dll
+*.sys
+*.bin
+*.tmp
+*.zip
+*.7z
+*.rar
+# analysis byproducts
+*.pkl
+out/
+__pycache__/
